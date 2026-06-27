@@ -1,13 +1,13 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { toast } from 'react-hot-toast';
-import { io } from 'socket.io-client';
-import { useAuth } from '../context/AuthContext';
-import useWebRTC from '../hooks/useWebRTC';
-import VideoGrid from '../components/VideoGrid';
-import Controls from '../components/Controls';
-import ChatSidebar from '../components/ChatSidebar';
-import api from '../services/api';
+import { useEffect, useState, useRef, useCallback } from "react";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { io } from "socket.io-client";
+import { useAuth } from "../context/AuthContext";
+import useWebRTC from "../hooks/useWebRTC";
+import VideoGrid from "../components/VideoGrid";
+import Controls from "../components/Controls";
+import ChatSidebar from "../components/ChatSidebar";
+import api from "../services/api";
 
 const RoomPage = () => {
   const { roomId } = useParams();
@@ -21,23 +21,23 @@ const RoomPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(window.innerWidth > 768);
   const [participants, setParticipants] = useState([]);
   const [messages, setMessages] = useState([]);
-  const [localSocketId, setLocalSocketId] = useState('');
+  const [localSocketId, setLocalSocketId] = useState("");
   const [isConnected, setIsConnected] = useState(false);
 
   // Establish socket connection
   useEffect(() => {
-    const s = io('/', {
-      transports: ['websocket', 'polling'],
+    const s = io("https://nexmeeting.onrender.com", {
+      transports: ["websocket", "polling"],
     });
     socketRef.current = s;
     setSocket(s);
 
-    s.on('connect', () => {
+    s.on("connect", () => {
       setIsConnected(true);
       setLocalSocketId(s.id);
     });
 
-    s.on('disconnect', () => setIsConnected(false));
+    s.on("disconnect", () => setIsConnected(false));
 
     return () => {
       s.disconnect();
@@ -55,8 +55,8 @@ const RoomPage = () => {
         setRoomInfo(roomRes.data);
         setMessages(msgRes.data);
       } catch {
-        toast.error('Room not found or access denied');
-        navigate('/dashboard');
+        toast.error("Room not found or access denied");
+        navigate("/dashboard");
       }
     };
     if (user) load();
@@ -84,37 +84,38 @@ const RoomPage = () => {
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('participants-update', (list) => setParticipants(list));
+    socket.on("participants-update", (list) => setParticipants(list));
 
-    socket.on('receive-message', (msg) => {
-      setMessages(prev => [...prev, msg]);
+    socket.on("receive-message", (msg) => {
+      setMessages((prev) => [...prev, msg]);
     });
 
-    socket.on('user-joined', ({ username }) => {
-      toast(`${username} joined the room`, { icon: '👋', duration: 3000 });
+    socket.on("user-joined", ({ username }) => {
+      toast(`${username} joined the room`, { icon: "👋", duration: 3000 });
     });
 
-    socket.on('user-left', ({ username }) => {
-      toast(`${username} left`, { icon: '👋', duration: 2000 });
+    socket.on("user-left", ({ username }) => {
+      toast(`${username} left`, { icon: "👋", duration: 2000 });
     });
 
     return () => {
-      socket.off('participants-update');
-      socket.off('receive-message');
-      socket.off('user-joined');
-      socket.off('user-left');
+      socket.off("participants-update");
+      socket.off("receive-message");
+      socket.off("user-joined");
+      socket.off("user-left");
     };
   }, [socket]);
 
   const handleEndCall = useCallback(() => {
-    socket?.emit('leave-room', { roomId });
-    navigate('/dashboard');
-    toast('You left the room', { icon: '👋' });
+    socket?.emit("leave-room", { roomId });
+    navigate("/dashboard");
+    toast("You left the room", { icon: "👋" });
   }, [socket, roomId, navigate]);
 
   const copyRoomId = () => {
-    navigator.clipboard.writeText(roomId)
-      .then(() => toast.success('Room ID copied!'));
+    navigator.clipboard
+      .writeText(roomId)
+      .then(() => toast.success("Room ID copied!"));
   };
 
   if (!roomInfo || !socket) {
@@ -131,34 +132,67 @@ const RoomPage = () => {
       {/* Room header */}
       <header className="room-header">
         <div className="room-header-left">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{
-              width: 28, height: 28,
-              background: 'var(--gradient-primary)',
-              borderRadius: '6px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-            }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="m22 8-6 4 6 4V8z"/>
-                <rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div
+              style={{
+                width: 28,
+                height: 28,
+                background: "var(--gradient-primary)",
+                borderRadius: "6px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m22 8-6 4 6 4V8z" />
+                <rect width="14" height="12" x="2" y="6" rx="2" ry="2" />
               </svg>
             </div>
-            <span className="room-title">{roomInfo.name || location.state?.roomName || 'Room'}</span>
+            <span className="room-title">
+              {roomInfo.name || location.state?.roomName || "Room"}
+            </span>
           </div>
-          <span className="room-id-badge" onClick={copyRoomId} title="Click to copy Room ID">
+          <span
+            className="room-id-badge"
+            onClick={copyRoomId}
+            title="Click to copy Room ID"
+          >
             {roomId.slice(0, 12)}...
           </span>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-md)' }}>
-          <div className={`connection-status ${isConnected ? 'connected' : 'connecting'}`}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "var(--space-md)",
+          }}
+        >
+          <div
+            className={`connection-status ${
+              isConnected ? "connected" : "connecting"
+            }`}
+          >
             <div className="connection-dot" />
-            {isConnected ? 'Connected' : 'Connecting...'}
+            {isConnected ? "Connected" : "Connecting..."}
           </div>
-          <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>
-            {1 + peers.length} participant{peers.length !== 0 ? 's' : ''}
+          <div style={{ fontSize: 13, color: "var(--text-muted)" }}>
+            {1 + peers.length} participant{peers.length !== 0 ? "s" : ""}
           </div>
-          <div className="user-avatar" style={{ background: user?.avatarColor }}>
+          <div
+            className="user-avatar"
+            style={{ background: user?.avatarColor }}
+          >
             {user?.username?.[0]?.toUpperCase()}
           </div>
         </div>
@@ -183,7 +217,7 @@ const RoomPage = () => {
             onToggleAudio={toggleAudio}
             onToggleVideo={toggleVideo}
             onToggleScreen={toggleScreenShare}
-            onToggleSidebar={() => setSidebarOpen(p => !p)}
+            onToggleSidebar={() => setSidebarOpen((p) => !p)}
             sidebarOpen={sidebarOpen}
             onEndCall={handleEndCall}
           />
