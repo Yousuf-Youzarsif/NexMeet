@@ -1,6 +1,6 @@
-import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { io } from 'socket.io-client';
-import { useAuth } from './AuthContext';
+import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { io } from "socket.io-client";
+import { useAuth } from "./AuthContext";
 
 const SocketContext = createContext(null);
 
@@ -12,21 +12,21 @@ export const SocketProvider = ({ children }) => {
   useEffect(() => {
     if (!user) return;
 
-    const socket = io('/', {
-      transports: ['websocket', 'polling'],
-      auth: { token: localStorage.getItem('nexmeet_token') },
+    const socket = io("https://nexmeeting.onrender.com", {
+      transports: ["websocket", "polling"],
+      auth: { token: localStorage.getItem("nexmeet_token") },
     });
 
     socketRef.current = socket;
 
-    socket.on('connect', () => {
+    socket.on("connect", () => {
       setIsConnected(true);
-      console.log('🔌 Socket connected:', socket.id);
+      console.log("🔌 Socket connected:", socket.id);
     });
 
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
       setIsConnected(false);
-      console.log('🔌 Socket disconnected');
+      console.log("🔌 Socket disconnected");
     });
 
     return () => {
